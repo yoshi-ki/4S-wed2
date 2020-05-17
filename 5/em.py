@@ -4,7 +4,7 @@ from scipy.stats import norm
 
 data_num = 1000
 ndist = 3
-nrepeat = 2
+nrepeat = 3
 
 
 np.random.seed(0)
@@ -67,21 +67,33 @@ if __name__ == "__main__":
     #initialize hyper-parameters and data
     data = data_generate(data_num)
     ws,mus,sigmas = initialize()
-    
-    #EM algorithm
-    for i in range(nrepeat):
-        ws,mus,sigmas = em_step(ws,mus,sigmas,data)
-    
+
     #calculate distribution
     X = np.arange(-6,6,0.1)
     Y = ws[0] * norm.pdf(X,mus[0],sigmas[0])
     for i in range(ndist-1):
         Y = Y + ws[i+1] * norm.pdf(X,mus[i+1],sigmas[i+1])
-    
     # draw
     plt.figure()
     plt.plot(X,Y)
     plt.hist(data,bins=30,density=True)
-    plt.savefig("em.png")
+    plt.savefig("test" + "0" + ".png")
+
+    
+    #EM algorithm
+    for i in range(nrepeat):
+        ws,mus,sigmas = em_step(ws,mus,sigmas,data)
+    
+        #calculate distribution
+        X = np.arange(-6,6,0.1)
+        Y = ws[0] * norm.pdf(X,mus[0],sigmas[0])
+        for j in range(ndist-1):
+            Y = Y + ws[j+1] * norm.pdf(X,mus[j+1],sigmas[j+1])
+    
+        # draw
+        plt.figure()
+        plt.plot(X,Y)
+        plt.hist(data,bins=30,density=True)
+        plt.savefig("test" + str(i+1) + ".png")
 
 
