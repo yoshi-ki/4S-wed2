@@ -2,9 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.io import loadmat
 
-data = loadmat('digit.mat')
-train = data['X']
-test = data['T']
 
 
 def knn(train_x, train_y, test_x, k_list):
@@ -31,9 +28,23 @@ def knn(train_x, train_y, test_x, k_list):
                 label_sum_matrix, axis=1)[None]], axis=0)
     return ret_matrix  # ret_matrix.shape == (len(k_list), len(test_x))
 
+def shuffle_two_array(x,y):
+    shuffled_x = np.array([])
+    shuffled_y = np.array([])
+    permutation = np.random.permutation(len(x))
+    for i in permutation:
+        shuffled_x = np.append(shuffled_x,x[i])
+        shuffled_y = np.append(shuffled_y,y[i])
+    return (shuffled_x,shuffled_y)
+
 if __name__ == "__main__":
-    ks = [1]
-    #cross validation with 5 subsets
+    ks = [1,2,3,4,5]
+    kscore = np.array([])
+    
+    #first, take data from the dataset
+    data = loadmat('digit.mat')
+    train = data['X']
+    test = data['T']
     train_x = np.array([])
     train_y = np.array([])
     for i in range(10):
@@ -42,6 +53,33 @@ if __name__ == "__main__":
             train_y = np.append(train_y,i)
     train_x = train_x.reshape(5000,256)
 
+
+    #second, shuffle the data for dividing to sets of subsets
+    shuffled_x, shuffled_y = shuffle_two_array(train_x, train_y)
+    shuffled_x = shuffled_x.reshape(5000,256)
+    
+    n = 20
+    subset_size = int(5000/n)
+    #cross validation with n subsets
+    k_score = np.zeros(len(ks))
+    for i in range(n):
+        #create ith data
+        i_train_x = np.append(shuffled_x[0:(i * subset_size)],shuffled_x[((i+1) * subset_size):])
+        i_train_y = np.append(shuffled_y[0:(i * subset_size)],shuffled_y[((i+1) * subset_size):])
+        i_test_x = shuffled_x[(i * subset_size) : ((i+1) * subset_size)]
+        i_test_y = shuffled_y[(i * subset_size) : ((i+1) * subset_size)]
+
+        i_train_x = i_train_x.reshape(len(shuffled_x) - subset_size,256)
+        i_test_x = i_test_x.reshape(subset_size,256)
+
+
+        i_result = knn(i_train_x,i_train_y,i_test_x,ks)
+        print(i_result)
+        
+
+
+
+
     for i in range(10):
         test_x = np.array([])
         for j in range(200):
@@ -49,4 +87,16 @@ if __name__ == "__main__":
         test_x = test_x.reshape(200,256)
         ret_mat = knn(train_x,train_y,test_x,ks)
         print(ret_mat)
+
+
+
+
+
+
+
+
+
+
+
+
 
