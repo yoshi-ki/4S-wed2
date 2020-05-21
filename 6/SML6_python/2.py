@@ -38,7 +38,7 @@ def shuffle_two_array(x,y):
     return (shuffled_x,shuffled_y)
 
 if __name__ == "__main__":
-    ks = [1,2,3,4,5]
+    ks = [1,2,3,4,5,6,7,8,9,10]
     kscore = np.array([])
     
     #first, take data from the dataset
@@ -57,10 +57,10 @@ if __name__ == "__main__":
     #second, shuffle the data for dividing to sets of subsets
     shuffled_x, shuffled_y = shuffle_two_array(train_x, train_y)
     shuffled_x = shuffled_x.reshape(5000,256)
-    
+
+    #cross validation with n subsets
     n = 20
     subset_size = int(5000/n)
-    #cross validation with n subsets
     k_score = np.zeros(len(ks))
     for i in range(n):
         #create ith data
@@ -74,26 +74,41 @@ if __name__ == "__main__":
 
 
         i_result = knn(i_train_x,i_train_y,i_test_x,ks)
-        print(i_result)
-        
+        for j in range(len(ks)):
+            tempscore = 0
+            for k in range(len(i_test_y)):
+                if(i_result[j][k] != i_test_y[k]):
+                    tempscore = tempscore + 1
+            k_score[j] = k_score[j] + tempscore 
+    k_score = k_score / 5000
+    #print(k_score)
+    bestk = ks[np.argmin(k_score)]
+    print("best k is ",bestk)
 
 
-
-
+    final_scores = np.zeros(len(ks))
     for i in range(10):
         test_x = np.array([])
         for j in range(200):
             test_x = np.append(test_x,test[:,j,i])
         test_x = test_x.reshape(200,256)
+        
         ret_mat = knn(train_x,train_y,test_x,ks)
-        print(ret_mat)
+        final_score = 0
+        for j in range(len(ks)):
+            for k in range(len(ret_mat[j])):
+                if(ret_mat[j][k] != i):
+                    final_scores[j] = final_scores[j] + 1
+    final_scores = final_scores / 2000
+    print(final_scores)
 
-
-
-
-
-
-
+    #plot scores
+    plt.figure()
+    x = np.array([1,2,3,4,5,6,7,8,9,10])
+    plt.plot(x,k_score,"red", label="cross-validation")
+    plt.plot(x,final_scores,"blue", label="test")
+    plt.legend()
+    plt.savefig("2.png")
 
 
 
