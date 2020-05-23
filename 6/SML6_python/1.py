@@ -38,7 +38,7 @@ def kernel_density_method(data,h):
     Y = p_hat(X,data,h)
     plt.hist(data,bins = 30,density = True)
     plt.plot(X,Y)
-    plt.savefig("h=" + str(h) + ".png")
+    plt.savefig("h" + str(int(h*100)) + ".png")
 
     return
 
@@ -53,20 +53,15 @@ def cross_validation(data,n):
     permutation = np.random.permutation(len(data))
     for i in permutation:
         ndata = np.append(ndata,data[i])
-   
+
     subset_size = int(len(ndata) / n)
     for h in hs:
         score = 0
         for i in range(n):
             #select test data as ith subset
             #and create test and train data
-            test_data = np.array([])
-            train_data = np.array([])
-            for j in range(len(ndata)):
-                if(int(j/subset_size) == i) :
-                    test_data = np.append(test_data, ndata[j])
-                else :
-                    train_data = np.append(train_data, ndata[j])
+            train_data = np.append(ndata[0:(i*subset_size)],ndata[((i+1)*subset_size):])
+            test_data = ndata[(i*subset_size):((i+1)*subset_size)]
             
             # compute the score
             tempscore = 0
